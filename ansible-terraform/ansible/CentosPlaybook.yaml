@@ -1,0 +1,86 @@
+---
+- name: install docker ce and compose
+# install as per https://docs.docker.com/install/linux/docker-ce/centos/
+  hosts: all
+  become: true
+  become_method: sudo
+  become_user: root
+  tasks:
+    - name: install packages for docker ce
+      yum: 
+        name: "{{ item }}"
+        state: latest
+      loop: 
+        - yum-utils
+        - git
+        - device-mapper-persistent-data
+        - lvm2
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+    - name: Install Docker CE
+      package:
+        name: docker-ce
+        state: latest
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+    - name: Add user to docker group
+      user:
+        name: "{{ user }}"
+        groups: docker
+        append: yes
+    - name: Install Extra Package for Enterprise Linux
+      yum: 
+        name: epel-release
+        state: latest
+    - name: Install python-pip
+      yum:
+        name: python-pip
+        state: latest
+    - name: Install Docker Compose
+      yum:
+        name: docker-compose
+        state: latest
+- name: install download and install Lake Problem
+  hosts: all
+  tasks:
+    - name: Create Directory
+    # TODO: change the version as Lake_Problem_DPS is developed
+    # ansible git requires empty directory
+      file:
+        path: ${HOME}/Lake_Problem_DPS
+        state: directory 
+    - name: download lake problem
+      git: 
+        repo: https://github.com/federatedcloud/Lake_Problem_DPS.git
+        dest: ${HOME}/Lake_Problem_DPS
+        version: origin/multivm-dev
+    - name: reset connection for docker group
+    # need to reset connection for docker commands
+      meta: reset_connection
+    - name: copy bitbucket private key
+      copy: 
+        src: "{{ bitbucket_key }}"
+        dest: tempkey
+        owner: "{{ user }}"
+        owner: "{{ user }}"
+        mode: '0600'
+    - name: create image
+    # async is not needed (causes it to terminate early and register if we want to refer to it later) 
+      shell: "BITBUCKET_SSH_KEY=${HOME}/tempkey source docker-compose-openmpi.sh up --scale mpi_head=1 --scale mpi_node=3 </dev/null >/dev/null 2>&1 &"
+      args:
+        chdir: ${HOME}/Lake_Problem_DPS  
+        executable: /bin/bash 
+      async: 300
+      poll: 0
+      register: container
+    - name: sleep
+    # sleep to let scripts run
+      pause:
+        minutes: 5
+    - name: stop all containers
+      shell: "docker stop $(docker ps -aq)"      

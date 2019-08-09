@@ -1,0 +1,3 @@
+%{ for addr in split(",", ip_addrs) ~}
+c${index(split(",", ip_addrs), addr)+1}
+%{ endfor ~}
