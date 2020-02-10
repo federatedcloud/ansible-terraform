@@ -1,0 +1,19 @@
+---
+- name: push a list of files from yaml
+  hosts: all
+  tasks: 
+    - name: Include list as a variable list
+      include_vars: 
+        file: list.yaml
+        name: list
+    - name: make foo directory
+      file: 
+        path: ~/foo
+        state: directory
+    - name: copy files from yaml list
+      copy: 
+        src: "{{ item }}"
+        dest: ~/foo
+        mode: "0644"
+      with_items: "{{ list.foo }}"
+...
