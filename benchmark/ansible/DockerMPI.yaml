@@ -1,0 +1,32 @@
+---
+- name: copy hostfile and fire up containers
+  hosts: external_ips
+  tasks:
+    - name: wait 600 seconds for target connection to be reachable
+      wait_for_connection:
+    - name: copy Dockerfile folder for multivm build
+      copy:
+        src: ../multivm_container_files
+        dest: /home/{{ user }}/
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0755
+    - name: build multivm image from existing docker image without cluster host information
+      shell: "docker build -t lake_problem_multivm ."
+      args:
+        chdir: /home/{{ user }}/multivm_container_files 
+    - name: remove existing container
+      shell: docker rm -f nix_alpine_container
+      ignore_errors: yes 
+    - name: create lake problem nix alpine multivm container
+      shell: docker run -p 2222:2222 --network host --name nix_alpine_container lake_problem_multivm:latest sleep 10000 &
+    - name: ping all
+      shell: "docker exec -u 0 nix_alpine_container ping -c 5 -t 10 '{{ item }}'"
+      loop: "{{ groups['internal_ips'] }}"
+    - name: ssh all as nixuser
+      shell: "docker exec -u nixuser nix_alpine_container bash -c 'ssh -o ConnectTimeout=10 -i ${HOME}/.ssh/id_rsa {{ item }} echo && hostname && echo || echo || echo'"
+      loop: "{{ groups['hosts'] }}"
+    - name: mpirun hostname 
+      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname'"
+    - name: mpirun ring
+      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring'"
