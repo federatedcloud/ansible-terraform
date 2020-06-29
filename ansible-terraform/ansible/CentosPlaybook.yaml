@@ -75,12 +75,12 @@
       args:
         chdir: ${HOME}/Lake_Problem_DPS  
         executable: /bin/bash 
-      async: 300
+      async: 600
       poll: 0
       register: container
     - name: sleep
     # sleep to let scripts run
       pause:
-        minutes: 5
+        minutes: 10
     - name: stop all containers
       shell: "docker stop $(docker ps -aq)"      

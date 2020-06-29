@@ -1,4 +1,4 @@
-FROM nix_alpine_openmpi:75ac746a05cfe14d79fa992f5b36285d19c1a39d 
+FROM nix_alpine_openmpi:75ac746a05cfe14d79fa992f5b36285d19c1a39d
 USER root
 
 RUN passwd -d nixuser

@@ -6,16 +6,16 @@ provider "google" {
 resource "random_id" "instance_id" {
   byte_length = 8
 }
-resource "google_compute_network" "openmpi_cluster" {
-  name = "openmpi-cluster"
+resource "google_compute_network" "openmpi_cluster2" {
+  name = "openmpi-cluster2"
   project = "${var.project_id}"
 }
-resource "google_compute_subnetwork" "openmpi_cluster" {
-  name = "openmpi-default-subnetwork"
+resource "google_compute_subnetwork" "openmpi_cluster2" {
+  name = "openmpi-default-subnetwork2"
   ip_cidr_range = "10.0.0.0/16"
   project = "${var.project_id}"
   region = "${var.region}"
-  network = "${google_compute_network.openmpi_cluster.self_link}"
+  network = "${google_compute_network.openmpi_cluster2.self_link}"
   
 }
 resource "google_compute_instance" "openmpi_base_vm" {
@@ -23,7 +23,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
  machine_type = "${var.machine_type}"
  zone         = "${var.zone}"
 
- depends_on = ["google_compute_network.openmpi_cluster","google_compute_subnetwork.openmpi_cluster"]
+ depends_on = ["google_compute_network.openmpi_cluster2","google_compute_subnetwork.openmpi_cluster2", "google_compute_firewall.allow_ssh2", "google_compute_firewall.allow_internal_tcp2", "google_compute_firewall.allow_all_ICMP2"]
  boot_disk {
    initialize_params {
      //GB size
@@ -34,7 +34,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
  }
  metadata_startup_script = "echo"
  network_interface {
-   network = "openmpi-cluster"
+   network = "openmpi-cluster2"
    access_config {
      // Include this section to give the VM a custom external ip address
    }
@@ -62,46 +62,46 @@ resource "google_compute_instance" "openmpi_base_vm" {
 ###################################################################
 # Setting up Security Groups
 ###################################################################
-resource "google_compute_firewall" "allow_ssh" {
-  name = "allow-ssh"
-  network = "openmpi-cluster"
+resource "google_compute_firewall" "allow_ssh2" {
+  name = "allow-ssh2"
+  network = "openmpi-cluster2"
 
   allow {
     protocol = "tcp"
     ports = ["22"]
   }
-  source_ranges = ["128.84.0.0/16"]
+  source_ranges = ["24.59.0.0/16", "128.84.0.0/16", "10.41.0.0/16"]
   priority = "1000"
-  depends_on = ["google_compute_network.openmpi_cluster","google_compute_subnetwork.openmpi_cluster"]
+  depends_on = ["google_compute_network.openmpi_cluster2","google_compute_subnetwork.openmpi_cluster2"]
 }
-resource "google_compute_firewall" "allow_internal_tcp" {
-  name = "allow-internal-tcp"
-  network = "openmpi-cluster"
+resource "google_compute_firewall" "allow_internal_tcp2" {
+  name = "allow-internal-tcp2"
+  network = "openmpi-cluster2"
   
   allow {
     protocol = "tcp"
   }
   #TODO: edit this source range
-  source_ranges = ["10.138.0.0/16"]
+  source_ranges = ["10.162.0.0/20"]
   priority = "1000"
-  depends_on = ["google_compute_network.openmpi_cluster","google_compute_subnetwork.openmpi_cluster"]
+  depends_on = ["google_compute_network.openmpi_cluster2","google_compute_subnetwork.openmpi_cluster2"]
 }
-resource "google_compute_firewall" "allow_all_ICMP" {
-  name = "allow-all-icmp"
-  network = "openmpi-cluster"
+resource "google_compute_firewall" "allow_all_ICMP2" {
+  name = "allow-all-icmp2"
+  network = "openmpi-cluster2"
   
   allow {
     protocol = "icmp"
   }
   priority = "1000"
-  depends_on = ["google_compute_network.openmpi_cluster","google_compute_subnetwork.openmpi_cluster"]
+  depends_on = ["google_compute_network.openmpi_cluster2","google_compute_subnetwork.openmpi_cluster2"]
 }
 
 ###################################################################
 # Saving instance to snapshot
 ###################################################################
 resource "google_compute_snapshot" "openmpi_base_vm" {
-  name = "openmpi-base-vm-snapshot"
+  name = "openmpi-base-vm-snapshot2"
   source_disk = "${google_compute_instance.openmpi_base_vm.name}"
   zone = "${google_compute_instance.openmpi_base_vm.zone}"
   labels = {
@@ -112,7 +112,7 @@ resource "google_compute_snapshot" "openmpi_base_vm" {
 # Make disk from snapshot
 ###################################################################
 resource "google_compute_disk" "openmpi_base_vm" {
-  name = "openmpi-base-vm-disk"
+  name = "openmpi-base-vm-disk2"
   type = "${var.disk_type}"
   zone = "${google_compute_instance.openmpi_base_vm.zone}"
   snapshot = "${google_compute_snapshot.openmpi_base_vm.name}"
@@ -121,7 +121,7 @@ resource "google_compute_disk" "openmpi_base_vm" {
 # Make image from disk
 ###################################################################
 resource "google_compute_image" "openmpi_base_vm" {
-  name = "openmpi-base-vm-image"
+  name = "openmpi-base-vm-image2"
   source_disk = "${google_compute_disk.openmpi_base_vm.self_link}"
 }
 ###################################################################
@@ -129,7 +129,7 @@ resource "google_compute_image" "openmpi_base_vm" {
 ###################################################################
 resource "google_compute_instance" "mpi" {
  count = "${var.cluster_count}" 
- name         = "mpi-instances${count.index}"
+ name         = "mpi-instances2-${count.index}"
  machine_type = "${var.machine_type}"
  zone         = "${var.zone}"
 
@@ -142,7 +142,7 @@ resource "google_compute_instance" "mpi" {
    }
  }
  network_interface {
-   network = "openmpi-cluster"
+   network = "openmpi-cluster2"
 
    access_config {
      // Include this section to give the VM a custom external ip address
@@ -157,7 +157,7 @@ resource "google_compute_instance" "mpi" {
    connection {
     type = "ssh"
     user = "${var.USER}"
-    private_key = "${file("${var.PRIVATE_KEY}")}"
+    private_key = "${file(var.PRIVATE_KEY)}"
    }
  }
 }
