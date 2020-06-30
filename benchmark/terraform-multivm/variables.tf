@@ -1,10 +1,10 @@
 variable "credentials" {
   description = "The google credentials" 
-  default = "googCredentials.json"
+  default = "googleCredentials.json"
 }
 variable "region" {
   description = "The GCE region to create instance in."
-  default = "us-east1"
+  default = "northamerica-northeast1"
 }
 variable "project_id" {
   description = "name of your project"
@@ -12,15 +12,15 @@ variable "project_id" {
 }
 variable "machine_type" {
   description = "type of instance to fire up"
-  default = "n1-standard-1" 
+  default = "n1-standard-4" 
 }
 variable "zone" {
   description = "zone you wish to create the instance in"
-  default = "us-east1-b" 
+  default = "northamerica-northeast1-b" 
 }
 variable "disk_size" {
   description = "GB of memory used on disk"
-  default = "10"
+  default = "20"
 }
 variable "disk_type" {
   description = "type of gcp disk (usually pd-standard or pd-ssd)"

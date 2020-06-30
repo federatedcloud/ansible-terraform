@@ -56,7 +56,8 @@
         state: directory 
     - name: download lake problem
       git: 
-        repo: https://github.com/federatedcloud/Lake_Problem_DPS.git
+      #repo: https://github.com/federatedcloud/Lake_Problem_DPS.git
+        repo : https://github.com/jefflantz/Lake_Problem_DPS.git
         dest: ${HOME}/Lake_Problem_DPS
         version: origin/multivm-dev
     - name: reset connection for docker group
@@ -71,16 +72,16 @@
         mode: '0600'
     - name: create image
     # async is not needed (causes it to terminate early and register if we want to refer to it later) 
-      shell: "BITBUCKET_SSH_KEY=${HOME}/tempkey source docker-compose-openmpi.sh up --scale mpi_head=1 --scale mpi_node=3 </dev/null >/dev/null 2>&1 &"
+      shell: "BITBUCKET_SSH_KEY=${HOME}/tempkey source build-openmpi.sh"
       args:
         chdir: ${HOME}/Lake_Problem_DPS  
         executable: /bin/bash 
-      async: 300
+      async: 600
       poll: 0
       register: container
     - name: sleep
     # sleep to let scripts run
       pause:
-        minutes: 5
+        minutes: 10
     - name: stop all containers
       shell: "docker stop $(docker ps -aq)"      

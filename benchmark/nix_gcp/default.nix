@@ -11,7 +11,7 @@ stdenv.mkDerivation {
   # terraform and ansible required packages
   openssh
   ansible_2_7 
-  terraform_0_11
+  terraform
   ];
   src = null; 
 }
