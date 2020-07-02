@@ -5,4 +5,4 @@ docker build -t nix_build_gcp_image \
   .
 docker stop terraform_ansible_container
 docker rm terraform_ansible_container
-docker run --name terraform_ansible_container nix_build_gcp_image sleep 1000 &
+docker run --name terraform_ansible_container nix_build_gcp_image sleep 10000 &

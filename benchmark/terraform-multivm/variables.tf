@@ -12,7 +12,7 @@ variable "project_id" {
 }
 variable "machine_type" {
   description = "type of instance to fire up"
-  default = "n1-standard-4" 
+  default = "n1-standard-1" 
 }
 variable "zone" {
   description = "zone you wish to create the instance in"

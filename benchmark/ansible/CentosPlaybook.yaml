@@ -56,8 +56,7 @@
         state: directory 
     - name: download lake problem
       git: 
-      #repo: https://github.com/federatedcloud/Lake_Problem_DPS.git
-        repo : https://github.com/jefflantz/Lake_Problem_DPS.git
+        repo: https://github.com/federatedcloud/Lake_Problem_DPS.git
         dest: ${HOME}/Lake_Problem_DPS
         version: origin/multivm-dev
     - name: reset connection for docker group
@@ -76,12 +75,12 @@
       args:
         chdir: ${HOME}/Lake_Problem_DPS  
         executable: /bin/bash 
-      async: 600
+        #async: 300
       poll: 0
       register: container
-    - name: sleep
+      #- name: sleep
     # sleep to let scripts run
-      pause:
-        minutes: 10
-    - name: stop all containers
-      shell: "docker stop $(docker ps -aq)"      
+    #pause:
+    #    minutes: 5
+    #- name: stop all containers
+    #  shell: "docker stop $(docker ps -aq)"      

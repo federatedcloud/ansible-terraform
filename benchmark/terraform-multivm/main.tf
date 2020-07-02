@@ -1,7 +1,7 @@
 provider "google" {
-  credentials = var.credentials 
+  credentials = file(var.credentials)
   project = var.project_id
-  region = var.region 
+  region = var.region
 }
 resource "random_id" "instance_id" {
   byte_length = 8
@@ -71,7 +71,8 @@ resource "google_compute_firewall" "allow_ssh" {
     protocol = "tcp"
     ports = ["22"]
   }
-  source_ranges = ["24.59.0.0/16", "10.41.0.0/16", "128.84.0.0/16"]
+#open range for gce ssh
+  source_ranges = ["0.0.0.0/0", "24.59.0.0/16", "10.41.0.0/16", "128.84.0.0/16"]
   priority = "1000"
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster]
 }
@@ -83,7 +84,7 @@ resource "google_compute_firewall" "allow_internal_tcp" {
     protocol = "tcp"
   }
   #TODO: edit this source range
-  source_ranges = ["10.142.0.0/16"]
+  source_ranges = ["0.0.0.0/0", "10.142.0.0/16"]
   priority = "1000"
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster]
 }
