@@ -19,29 +19,33 @@ resource "google_compute_subnetwork" "openmpi_cluster" {
   
 }
 resource "google_compute_instance" "openmpi_base_vm" {
- name         = "openmpi-base-vm-${random_id.instance_id.hex}"
- machine_type = var.machine_type
- zone         = var.zone
+  name         = "openmpi-base-vm-${random_id.instance_id.hex}"
+  machine_type = var.machine_type
+  zone         = var.zone
 
- depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster, google_compute_firewall.allow_ssh, google_compute_firewall.allow_internal_tcp, google_compute_firewall.allow_all_ICMP]
- boot_disk {
-   initialize_params {
-     //GB size
-     size = var.disk_size
-     type = var.disk_type
-     image = var.image
-   }
- }
- metadata_startup_script = "echo"
- network_interface {
-   network = "openmpi-cluster"
-   access_config {
-     // Include this section to give the VM a custom external ip address
-   }
- }  
+  labels = {
+    "resource" : "base-vm",
+    "owner"    : "jcl393"
+  }
+  depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster, google_compute_firewall.allow_ssh, google_compute_firewall.allow_internal_tcp, google_compute_firewall.allow_all_ICMP]
+  boot_disk {
+    initialize_params {
+      //GB size
+      size = var.disk_size
+      type = var.disk_type
+      image = var.image
+    }
+  }
+  metadata_startup_script = "echo"
+  network_interface {
+    network = "openmpi-cluster"
+    access_config {
+      // Include this section to give the VM a custom external ip address
+    }
+  }  
   metadata = {
-   ssh-keys = "${var.USER}:${file("${var.PUBLIC_KEY}")}"
- }
+    ssh-keys = "${var.USER}:${file("${var.PUBLIC_KEY}")}"
+  }
 ###################################################################
 # Ansible Script for Configuration on startup 
 ###################################################################
@@ -107,7 +111,8 @@ resource "google_compute_snapshot" "openmpi_base_vm" {
   source_disk = google_compute_instance.openmpi_base_vm.name
   zone = google_compute_instance.openmpi_base_vm.zone
   labels = {
-    my_label = "open-base-vm"
+    "resource" = "base-vm-snapshot"
+    "owner" = "jcl393"
   }
 }
 ###################################################################
@@ -118,6 +123,10 @@ resource "google_compute_disk" "openmpi_base_vm" {
   type = var.disk_type
   zone = google_compute_instance.openmpi_base_vm.zone
   snapshot = google_compute_snapshot.openmpi_base_vm.name
+  labels = {
+    "resource" = "base-vm-disk"
+    "owner"    = "jcl393"
+  }
 }
 ###################################################################
 # Make image from disk
@@ -125,43 +134,52 @@ resource "google_compute_disk" "openmpi_base_vm" {
 resource "google_compute_image" "openmpi_base_vm" {
   name = "openmpi-base-vm-image"
   source_disk = google_compute_disk.openmpi_base_vm.self_link
+  labels = {
+    "resource" = "base-vm-image"
+    "owner"    = "jcl393"
+  }
 }
 ###################################################################
 # Make new instances
 ###################################################################
 resource "google_compute_instance" "mpi" {
- count = var.cluster_count 
- name         = "mpi-instances${count.index}"
- machine_type = var.machine_type
- zone         = var.zone
+  count = var.cluster_count 
+  name         = "mpi-instances${count.index}"
+  machine_type = var.machine_type
+  zone         = var.zone
 
- boot_disk {
-   initialize_params {
-     size = var.disk_size
-     type = var.disk_type
-     image = google_compute_image.openmpi_base_vm.self_link 
-   }
- }
- network_interface {
-   network = "openmpi-cluster"
+  labels = {
+    "resource" = "mpi-worker-vm"
+    "owner"    = "jcl393"
+  }
 
-   access_config {
+  boot_disk {
+    initialize_params {
+      size = var.disk_size
+      type = var.disk_type
+      image = google_compute_image.openmpi_base_vm.self_link 
+    }
+  }
+  network_interface {
+    network = "openmpi-cluster"
+
+    access_config {
      // Include this section to give the VM a custom external ip address
-   }
- }  
+    }
+  }  
   metadata = {
-   ssh-keys = "${var.USER}:${file(var.PUBLIC_KEY)}"
- }/*
- provisioner "remote-exec" {
+    ssh-keys = "${var.USER}:${file(var.PUBLIC_KEY)}"
+  }/*
+  provisioner "remote-exec" {
    # ensures that a connection is set up
        inline = ["echo"] 
-   connection {
-    type = "ssh"
-    user = var.USER
-    private_key = file(var.PRIVATE_KEY)
-    host = google_compute_instance.mpi.*.network_interface.0.network_ip
-   }
- }
+    connection {
+      type = "ssh"
+      user = var.USER
+      private_key = file(var.PRIVATE_KEY)
+      host = google_compute_instance.mpi.*.network_interface.0.network_ip
+    }
+  }
 */
 }
 ###################################################################
