@@ -23,7 +23,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
  machine_type = var.machine_type
  zone         = var.zone
 
- depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster]
+ depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster, google_compute_firewall.allow_ssh, google_compute_firewall.allow_internal_tcp, google_compute_firewall.allow_all_ICMP]
  boot_disk {
    initialize_params {
      //GB size
@@ -83,8 +83,8 @@ resource "google_compute_firewall" "allow_internal_tcp" {
   allow {
     protocol = "tcp"
   }
-  #TODO: edit this source range
-  source_ranges = ["0.0.0.0/0", "10.142.0.0/16"]
+  #TODO: edit this source range, possibly based on var.region
+  source_ranges = ["10.162.0.0/16"]
   priority = "1000"
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster]
 }
@@ -196,6 +196,6 @@ resource "null_resource" "default" {
   provisioner "local-exec" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' ../ansible/DockerMPI.yaml"
   }
- depends_on = [local_file.inventory, google_compute_instance.mpi]
+ depends_on = [local_file.inventory, local_file.mpi_hostfile, local_file.internal_ips, local_file.ssh_config, google_compute_instance.mpi]
 }
 

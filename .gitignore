@@ -79,6 +79,3 @@ generate_mpi_hostfile.py
 waterpaths_multivm
 WaterpathsMultiVM.yaml
 waterInventory
-
-#Testing folder
-tftest
