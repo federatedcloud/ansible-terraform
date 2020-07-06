@@ -24,7 +24,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
   zone         = var.zone
 
   labels = {
-    "resource" : "base-vm",
+    "resource" : "tf-ansible-base-vm",
     "owner"    : "jcl393"
   }
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster, google_compute_firewall.allow_ssh, google_compute_firewall.allow_internal_tcp, google_compute_firewall.allow_all_ICMP]
@@ -32,8 +32,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
     initialize_params {
       //GB size
       size = var.disk_size
-      type = var.disk_type
-      image = var.image
+      type = var.disk_type image = var.image
     }
   }
   metadata_startup_script = "echo"
@@ -111,7 +110,7 @@ resource "google_compute_snapshot" "openmpi_base_vm" {
   source_disk = google_compute_instance.openmpi_base_vm.name
   zone = google_compute_instance.openmpi_base_vm.zone
   labels = {
-    "resource" = "base-vm-snapshot"
+    "resource" = "tf-ansible-base-vm-snapshot"
     "owner" = "jcl393"
   }
 }
@@ -124,7 +123,7 @@ resource "google_compute_disk" "openmpi_base_vm" {
   zone = google_compute_instance.openmpi_base_vm.zone
   snapshot = google_compute_snapshot.openmpi_base_vm.name
   labels = {
-    "resource" = "base-vm-disk"
+    "resource" = "tf-ansible-base-vm-disk"
     "owner"    = "jcl393"
   }
 }
@@ -135,7 +134,7 @@ resource "google_compute_image" "openmpi_base_vm" {
   name = "openmpi-base-vm-image"
   source_disk = google_compute_disk.openmpi_base_vm.self_link
   labels = {
-    "resource" = "base-vm-image"
+    "resource" = "tf-ansible-base-vm-image"
     "owner"    = "jcl393"
   }
 }
@@ -149,7 +148,7 @@ resource "google_compute_instance" "mpi" {
   zone         = var.zone
 
   labels = {
-    "resource" = "mpi-worker-vm"
+    "resource" = "tf-ansible-mpi-worker-vm"
     "owner"    = "jcl393"
   }
 
