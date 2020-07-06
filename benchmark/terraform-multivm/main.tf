@@ -194,7 +194,7 @@ resource "null_resource" "default" {
     host = element(google_compute_instance.mpi.*.network_interface.0.access_config.0.nat_ip, 0)
   }
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' ../ansible/DockerMPI.yaml"
+    command = "sleep 10; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' ../ansible/DockerMPI.yaml"
   }
  depends_on = [local_file.inventory, local_file.mpi_hostfile, local_file.internal_ips, local_file.ssh_config, google_compute_instance.mpi]
 }
