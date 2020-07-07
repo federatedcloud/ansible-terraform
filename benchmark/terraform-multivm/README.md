@@ -1,13 +1,13 @@
 #  Terraform, Ansible, GCP
-The following Terraform and Ansible scripts allow for the creation of an openmpi multi-vm cluster on GCP. All instances will run ping, ssh, mpi hello, and mpi_ring. TODO: Finally a single instance will run lake_problem_dps on all of the instances.     
+The following Terraform and Ansible scripts allow for the creation of an openmpi multi-vm cluster on GCP. All instances will run ping, ssh, mpi hello, and mpi_ring. TODO: Finally a single instance will run lake_problem_dps on all of the instances EDIT: It doesn't anymore.
 ## Dependencies and configurations
-To get started, the terraform package (version 0.11) and ansible package (2.7.6+) will need to be downloaded locally. Terraform will need to have access to GCP by using json credentials files from [https://console.cloud.google.com/apis/credentials/serviceaccountkey](https://console.cloud.google.com/apis/credentials/serviceaccountkey). 
-All the parameters for setting up the instances are provided in the variables.tf file. It is important to note that the private and public keys will be used to access the created instance. A bitbucket private key is required to download the Borg repository which will be used in lake_problem_dps. The google credential file and project name will also need to be referenced here. 
+To get started, the terraform package (version 0.11+) and ansible package (2.7.6+) will need to be downloaded locally. Terraform will need to have access to GCP by using json credentials files from [https://console.cloud.google.com/apis/credentials/serviceaccountkey](https://console.cloud.google.com/apis/credentials/serviceaccountkey). 
+All the parameters for setting up the instances are provided in the variables.tf file. It is important to note that the private and public keys will be used to access the created instance. A bitbucket private key is required to download the Borg repository which will be used in lake_problem_dps. For this, you need to make a Bitbucket account and request access via the form [http://borgmoea.org](http://borgmoea.org/). The google credential file and project name will also need to be referenced here. 
 ## Creation and provisioning of instances
 The following steps detail how the instances are created and configured. These steps are applies automatically when calling the terraform scripts and do not need to be repeated. 
 1. Terraform will first set up a GCP network and subnetwork with a internal ip address range of 10.0.0.0/16. This is a blank network with default firewall rules of allowing all egress and preventing all ingress. A new centos7 will be set up on this network.
 2. Ansible installs the following packages in the centos7 instance (shell equivalent).
-  ```
+  ```bash
     sudo yum install yum-utils \ git \ device-mapper-persistent-data \ lvm2
     sudo yum-config-manager \ --add-repo \ https://download.docker.com/linux/centos/docker-ce.repo
     sudo yum install docker-ce
@@ -17,23 +17,22 @@ The following steps detail how the instances are created and configured. These s
     sudo yum install epel-release \ python-pip \ docker-compose
   ```
 3. Ansible resets connection (to update docker) and installs Lake_Problem_DPS in the centos7 instance
-  ```
+  ```bash
     git clone https://github.com/federatedcloud/Lake_Problem_DPS.git
     cd $HOME/Lake_Problem_DPS
-    BITBUCKET_SSH_KEY=${HOME}/tempkey source docker-compose-openmpi.sh up --scale mpi_head=1 --scale mpi_node=3 </dev/null >/dev/null 2>&1 &
+    BITBUCKET_SSH_KEY=${HOME}/tempkey source build-openmpi.sh
   ``` 
-4. Ansible sleeps for 300 seconds to let the image build then stops all containers
-5. Terraform then creates a snapshot of the instance. Terraform creates a disk from the snapshot. Finally terraform creates a new image from the disk. N instances will be created from this image (name mpi0 to mpiN). ssh_config and mpi_hostfile are generated (which will be needed to run openmpi). 
-6. Ansible exports the directory`multivm_container_files to the instances. The directory contains mpi_ring, hostfile, config_file, and Dockerfile
-7. A new docker image and container is created from the dockerfile
-  ```
+4. Terraform then creates a snapshot of the instance. Terraform creates a disk from the snapshot. Finally terraform creates a new image from the disk. N instances will be created from this image (name mpi0 to mpiN). ssh_config and mpi_hostfile are generated (which will be needed to run openmpi). 
+5. Ansible exports the directory `multivm_container_files` to the instances. The directory contains `mpi_ring`, `hostfile`, `config_file`, and `Dockerfile`
+6. A new docker image and container is created from the dockerfile
+  ```bash
     cd $HOME/multivm_container_files
     docker build -t lake_problem_multivm .
     docker rm -f nix_alpine_container
     docker run -p 2222:2222 --network host --name nix_alpine_container lake_problem_multivm:latest sleep 10000 &
   ```
 8. Run ping, ssh, mpi_hello, and mpi_ring tests
-  ```
+```bash
     docker exec -u 0 nix_alpine_container ping -c 5 -t 10 $ip_addresses
     docker exec -u nixuser nix_alpine_container bash -c 'ssh -o ConnectTimeout=10 -i ${HOME}/.ssh/id_rsa $ip_addresses echo && hostname && echo || echo || echo
     docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nix    user/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname
