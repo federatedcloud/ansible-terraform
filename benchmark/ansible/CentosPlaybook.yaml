@@ -67,7 +67,6 @@
         src: "{{ bitbucket_key }}"
         dest: tempkey
         owner: "{{ user }}"
-        owner: "{{ user }}"
         mode: '0600'
     - name: create image
     # async is not needed (causes it to terminate early and register if we want to refer to it later) 

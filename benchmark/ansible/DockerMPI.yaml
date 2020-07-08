@@ -30,3 +30,6 @@
       shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname'"
     - name: mpirun ring
       shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring'"
+    - name: lake problem
+      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/Lake_Problem_DPS/run_lake_problem.sh'"
+      ignore_errors: yes
