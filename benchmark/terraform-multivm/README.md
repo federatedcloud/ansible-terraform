@@ -2,8 +2,8 @@
 The following Terraform and Ansible scripts allow for the creation of an openmpi multi-vm cluster on GCP. All instances will run ping, ssh, mpi hello, and mpi_ring. TODO: Finally a single instance will run lake_problem_dps on all of the instances EDIT: It doesn't anymore.
 ## Dependencies and configurations
 To get started, the terraform package (version 0.12) and ansible package (2.7.6+) will need to be downloaded locally. Terraform will need to have access to GCP by using json credentials files from [https://console.cloud.google.com/apis/credentials/serviceaccountkey](https://console.cloud.google.com/apis/credentials/serviceaccountkey). 
-All the parameters for setting up the instances are provided in the variables.tf file. It is important to note that the private and public keys will be used to access the created instance. A bitbucket private key is required to download the Borg repository which will be used in `lake_problem_dps`. For this, you need to make a Bitbucket account and request access via the form [http://borgmoea.org](http://borgmoea.org/). The google credential file and project name will also need to be referenced here. You **must** add your IP range to the [list of accepted ssh sources](./main.tf#L79). One way to find your IP is to go to [whatismyipaddress.com](whatismyipaddress.com) and use the format `x.y.0.0/16`, where `x` and `y` match the IP you see.
-# Best Practices in Use
+All the parameters for setting up the instances are provided in the variables.tf and terraform.tfvars files. It is important to note that the private and public keys will be used to access the created instance. A bitbucket private key is required to download the Borg repository which will be used in `lake_problem_dps`. For this, you need to make a Bitbucket account and request access via the form at [http://borgmoea.org](http://borgmoea.org/). The google credential file and project name will also need to be referenced here. You **must** add your IP range to the [list of accepted ssh sources](./main.tf#L79). One way to find your IP is to run `dig +short myip.opendns.com @resolver1.opendns.com`. Using a CIDR of `x.y.0.0/16` (where `x`, `y` match your IP) is likely good enough without introducing severe secruity risks.
+## Best Practices in Use
  - Set values for variables in [terraform.tfvars](./terraform.tfvars) rather than [variables.tf](./variables.tf).
    - If using a region other than northamerica-northeast1, refer to the [GCP VPC network IP range table](https://cloud.google.com/vpc/docs/vpc#ip-ranges) and set the [tcp allowed range](https://github.com/federatedcloud/ansible-terraform/blob/aae06e77a58edd59ee5b3fe1b9a4678415b5880b/benchmark/terraform-multivm/main.tf#L91).
  - The image/containers built are somewhat large (~1.5 GB) so ensure you have space in your root directory. Use of `docker [container | image] prune`, `docker rm`, and/or `docker rmi` is recommended.
@@ -28,7 +28,7 @@ The following steps detail how the instances are created and configured. These s
     cd $HOME/Lake_Problem_DPS
     BITBUCKET_SSH_KEY=${HOME}/tempkey source build-openmpi.sh
   ``` 
-4. Terraform then creates a snapshot of the instance. Terraform creates a disk from the snapshot. Finally terraform creates a new image from the disk. N instances will be created from this image (name mpi0 to mpiN). ssh_config and mpi_hostfile are generated (which will be needed to run openmpi). 
+4. Terraform then creates a snapshot of the instance. Terraform creates a disk from the snapshot. Finally terraform creates a new image from the disk. N instances will be created from this image (name mpi0 to mpiN). `ssh_config `and `mpi_hostfile` are generated (which will be needed to run openmpi). 
 5. Ansible exports the directory `multivm_container_files` to the instances. The directory contains `mpi_ring`, `hostfile`, `config_file`, and `Dockerfile`
 6. A new docker image and container is created from the dockerfile
   ```bash
@@ -37,11 +37,11 @@ The following steps detail how the instances are created and configured. These s
     docker rm -f nix_alpine_container
     docker run -p 2222:2222 --network host --name nix_alpine_container lake_problem_multivm:latest sleep 10000 &
   ```
-8. Run ping, ssh, mpi_hello, and mpi_ring tests
+8. Run `ping`, `ssh`, `mpi_hello`, and `mpi_ring` tests
 ```bash
     docker exec -u 0 nix_alpine_container ping -c 5 -t 10 $ip_addresses
-    docker exec -u nixuser nix_alpine_container bash -c 'ssh -o ConnectTimeout=10 -i ${HOME}/.ssh/id_rsa $ip_addresses echo && hostname && echo || echo || echo
-    docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nix    user/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname
-    docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nix    user/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring
+    docker exec -u nixuser nix_alpine_container bash -c 'ssh -o ConnectTimeout=10 -i ${HOME}/.ssh/id_rsa $ip_addresses echo && hostname && echo || echo || echo'
+    docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname'
+    docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring'
   ```
 9. TODO: run lake problem

@@ -25,7 +25,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
 
   labels = {
     "resource" : "tf-ansible-base-vm",
-    "owner"    : "jcl393"
+    "owner"    : var.owner
   }
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster, google_compute_firewall.allow_ssh, google_compute_firewall.allow_internal_tcp, google_compute_firewall.allow_all_ICMP]
   boot_disk {
@@ -87,8 +87,7 @@ resource "google_compute_firewall" "allow_internal_tcp" {
   allow {
     protocol = "tcp"
   }
-  #TODO: edit this source range, possibly based on var.region
-  source_ranges = ["10.162.0.0/16"]
+  source_ranges = var.region_CIDR
   priority = "1000"
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster]
 }
@@ -112,7 +111,7 @@ resource "google_compute_snapshot" "openmpi_base_vm" {
   zone = google_compute_instance.openmpi_base_vm.zone
   labels = {
     "resource" = "tf-ansible-base-vm-snapshot"
-    "owner" = "jcl393"
+    "owner" = var.owner
   }
 }
 ###################################################################
@@ -125,7 +124,7 @@ resource "google_compute_disk" "openmpi_base_vm" {
   snapshot = google_compute_snapshot.openmpi_base_vm.name
   labels = {
     "resource" = "tf-ansible-base-vm-disk"
-    "owner"    = "jcl393"
+    "owner"    = var.owner
   }
 }
 ###################################################################
@@ -136,7 +135,7 @@ resource "google_compute_image" "openmpi_base_vm" {
   source_disk = google_compute_disk.openmpi_base_vm.self_link
   labels = {
     "resource" = "tf-ansible-base-vm-image"
-    "owner"    = "jcl393"
+    "owner"    = var.owner
   }
 }
 ###################################################################
@@ -150,7 +149,7 @@ resource "google_compute_instance" "mpi" {
 
   labels = {
     "resource" = "tf-ansible-mpi-worker-vm"
-    "owner"    = "jcl393"
+    "owner"    = var.owner
   }
 
   boot_disk {

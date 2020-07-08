@@ -2,9 +2,17 @@ variable "credentials" {
   description = "The google credentials" 
   default = "googleCredentials.json"
 }
+variable "owner" {
+  description = "Who's running the code (netID if applicable)"
+  default = "jcl393"
+}
 variable "region" {
   description = "The GCE region to create instance in."
   default = "northamerica-northeast1"
+}
+variable "region_CIDR" {
+  description = "The VPC CIDR for your region, found at https://cloud.google.com/vpc/docs/vpc#ip-ranges"
+  default = ["10.162.0.0/16"]
 }
 variable "project_id" {
   description = "name of your project"

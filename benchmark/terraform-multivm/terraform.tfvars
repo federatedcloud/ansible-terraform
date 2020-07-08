@@ -1,5 +1,7 @@
 credentials   = "gCloudNew.json"
+owner         = "jcl393"
 region        = "northamerica-northeast1"
+region_CIDR   = ["10.162.0.0/16"]
 project_id    = "jetstream-documentation"
 machine_type  = "n1-standard-4"
 zone          = "northamerica-northeast1-b"
