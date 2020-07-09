@@ -12,14 +12,14 @@
         group: "{{ user }}"
         mode: 0755
     - name: build multivm image from existing docker image without cluster host information
-      shell: "docker build -t lake_problem_multivm ."
+      shell: "docker build -t docker-nix-mpi-benchmarks ."
       args:
         chdir: /home/{{ user }}/multivm_container_files 
     - name: remove existing container
       shell: docker rm -f nix_alpine_container
       ignore_errors: yes 
-    - name: create lake problem nix alpine multivm container
-      shell: docker run -p 2222:2222 --network host --name nix_alpine_container lake_problem_multivm:latest sleep 10000 &
+    - name: create benchmarks nix alpine multivm container
+      shell: docker run -p 2222:2222 --network host --name nix_alpine_container docker-nix-mpi-benchmarks:latest sleep 10000 &
     - name: ping all
       shell: "docker exec -u 0 nix_alpine_container ping -c 5 -t 10 '{{ item }}'"
       loop: "{{ groups['internal_ips'] }}"
@@ -30,6 +30,6 @@
       shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname'"
     - name: mpirun ring
       shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring'"
-    - name: lake problem
-      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/Lake_Problem_DPS/run_lake_problem.sh'"
+    - name: benchmarks
+      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -np 4 --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/xhpl /home/nixuser/HPL.dat'"
       ignore_errors: yes

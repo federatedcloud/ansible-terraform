@@ -45,41 +45,30 @@
       yum:
         name: docker-compose
         state: latest
-- name: install download and install Lake Problem
+- name: install download and install benchmarks repo
   hosts: all
   tasks:
     - name: Create Directory
-    # TODO: change the version as Lake_Problem_DPS is developed
+    # TODO: change the version as docker-nix-mpi-benchmarks is developed
     # ansible git requires empty directory
       file:
-        path: ${HOME}/Lake_Problem_DPS
+        path: ${HOME}/docker-nix-mpi-benchmarks
         state: directory 
     - name: download lake problem
       git: 
-        repo: https://github.com/federatedcloud/Lake_Problem_DPS.git
-        dest: ${HOME}/Lake_Problem_DPS
-        version: origin/multivm-dev
+        repo: https://github.com/federatedcloud/docker-nix-mpi-benchmarks.git
+        dest: ${HOME}/docker-nix-mpi-benchmarks
+        version: master
     - name: reset connection for docker group
     # need to reset connection for docker commands
       meta: reset_connection
-    - name: copy bitbucket private key
-      copy: 
-        src: "{{ bitbucket_key }}"
-        dest: tempkey
-        owner: "{{ user }}"
-        mode: '0600'
     - name: create image
     # async is not needed (causes it to terminate early and register if we want to refer to it later) 
-      shell: "BITBUCKET_SSH_KEY=${HOME}/tempkey source build-openmpi.sh"
+      shell: "source build-openmpi.sh"
       args:
         chdir: ${HOME}/Lake_Problem_DPS  
         executable: /bin/bash 
-        #async: 300
       poll: 0
       register: container
-      #- name: sleep
-    # sleep to let scripts run
-    #pause:
-    #    minutes: 5
     #- name: stop all containers
     #  shell: "docker stop $(docker ps -aq)"      

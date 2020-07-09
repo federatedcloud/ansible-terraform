@@ -60,7 +60,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
     }
   } 
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${var.USER}@${google_compute_instance.openmpi_base_vm.network_interface.0.access_config.0.nat_ip},' --private-key '${var.PRIVATE_KEY}' ../ansible/CentosPlaybook.yaml --extra-vars 'bitbucket_key='${var.BITBUCKET_KEY}' user='${var.USER}''"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${var.USER}@${google_compute_instance.openmpi_base_vm.network_interface.0.access_config.0.nat_ip},' --private-key '${var.PRIVATE_KEY}' ../ansible/CentosPlaybook.yaml --extra-vars 'user='${var.USER}''"
   }
 }
 

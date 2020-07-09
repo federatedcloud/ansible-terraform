@@ -28,7 +28,7 @@ variable "zone" {
 }
 variable "disk_size" {
   description = "GB of memory used on disk"
-  default = "20"
+  default = "10"
 }
 variable "disk_type" {
   description = "type of gcp disk (usually pd-standard or pd-ssd)"
@@ -49,10 +49,6 @@ variable "PRIVATE_KEY" {
 variable "PUBLIC_KEY" {
   description = "location of public key"
   default = "~/.ssh/id_rsa.pub"
-}
-variable "BITBUCKET_KEY" {
-  description = "location of bickbucket private key"
-  default = "~/.ssh/id_rsa"
 }
 variable "USER" {
   description = "user to set up instance"

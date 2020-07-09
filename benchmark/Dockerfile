@@ -1,5 +1,5 @@
-#FROM cornellcac/nix_alpine_base:2cd324f48c57f66d476a7894c6a957a78e49b116
-FROM jefflantz/nix_alpine_base_2.3.6:148ef8f386bd8b4e8c5a084eb522eb2366bc4f88
+#FROM jefflantz/nix_alpine_base_2.3.6:148ef8f386bd8b4e8c5a084eb522eb2366bc4f88
+FROM cornellcac/nix_alpine_base:0f566286984d3565f89262acb3186483832bdae8
 
 USER $nixuser 
 RUN mkdir $HOME/.ssh/ && chmod 700 $HOME/.ssh/  
