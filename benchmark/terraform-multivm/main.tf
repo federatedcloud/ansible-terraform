@@ -20,7 +20,7 @@ resource "google_compute_subnetwork" "openmpi_cluster" {
 }
 resource "google_compute_instance" "openmpi_base_vm" {
   name         = "openmpi-base-vm-${random_id.instance_id.hex}"
-  machine_type = var.machine_type
+  machine_type = "n1-standard-2"
   zone         = var.zone
 
   labels = {
