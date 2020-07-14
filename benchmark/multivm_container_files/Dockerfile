@@ -1,4 +1,5 @@
-FROM nix_alpine_openmpi:923dc259b1ef2247de2e3bef6b897fcd789391c6 
+#FROM nix_alpine_openmpi:923dc259b1ef2247de2e3bef6b897fcd789391c6 
+FROM cornellcac/nix-mpi-benchmarks:56c9535e32224700fb513e1978af8980b2c239f1
 USER root
 
 RUN passwd -d nixuser

@@ -31,5 +31,4 @@
     - name: mpirun ring
       shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring'"
     - name: benchmarks
-      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -np 4 --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/xhpl /home/nixuser/HPL.dat'"
-      ignore_errors: yes
+      shell: "docker exec -u nixuser nix_alpine_container nix-shell dev.nix --run 'cd ~; export OMP_NUM_THREADS=2; mpirun -np 4 --hostfile mpi_hostfile --bind-to core --map-by ppr:2:node -x OMP_NUM_THREADS xhpl HPL.dat' > out.txt"

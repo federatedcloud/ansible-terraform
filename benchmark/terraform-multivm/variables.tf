@@ -54,3 +54,7 @@ variable "USER" {
   description = "user to set up instance"
   default = "centos"
 }
+variable "RUNNAME" {
+  description = "name of HPL output"
+  default = "out"
+}

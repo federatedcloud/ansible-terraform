@@ -45,6 +45,10 @@
       yum:
         name: docker-compose
         state: latest
+    - name: Install htop
+      yum:
+        name: htop
+        state: latest
 - name: install download and install benchmarks repo
   hosts: all
   tasks:
@@ -54,11 +58,11 @@
       file:
         path: ${HOME}/docker-nix-mpi-benchmarks
         state: directory 
-    - name: download lake problem
+    - name: download nix-mpi-benchmarks
       git: 
         repo: https://github.com/federatedcloud/docker-nix-mpi-benchmarks.git
         dest: ${HOME}/docker-nix-mpi-benchmarks
-        version: master
+        version: dev
     - name: reset connection for docker group
     # need to reset connection for docker commands
       meta: reset_connection
@@ -66,7 +70,7 @@
     # async is not needed (causes it to terminate early and register if we want to refer to it later) 
       shell: "source build-openmpi.sh"
       args:
-        chdir: ${HOME}/Lake_Problem_DPS  
+        chdir: ${HOME}/docker-nix-mpi-benchmarks
         executable: /bin/bash 
       poll: 0
       register: container

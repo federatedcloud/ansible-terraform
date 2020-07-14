@@ -76,7 +76,7 @@ resource "google_compute_firewall" "allow_ssh" {
     ports = ["22"]
   }
 #open range for gce ssh
-  source_ranges = ["24.59.0.0/16", "10.41.0.0/16", "128.84.0.0/16"]
+  source_ranges = ["0.0.0.0/0", "24.59.0.0/16", "10.41.0.0/16", "128.84.0.0/16"]
   priority = "1000"
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster]
 }
@@ -211,8 +211,8 @@ resource "null_resource" "default" {
     host = element(google_compute_instance.mpi.*.network_interface.0.access_config.0.nat_ip, 0)
   }
   provisioner "local-exec" {
-    command = "sleep 20; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' ../ansible/DockerMPI.yaml"
+    command = "sleep 20; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' ../ansible/DockerMPI.yaml && scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null centos@${google_compute_instance.mpi.0.network_interface.0.access_config[0].nat_ip}:~/out.txt ~/${var.RUNNAME}.txt"
   }
- depends_on = [local_file.inventory, local_file.mpi_hostfile, local_file.internal_ips, local_file.ssh_config, google_compute_instance.mpi]
+  depends_on = [local_file.inventory, local_file.mpi_hostfile, local_file.internal_ips, local_file.ssh_config, google_compute_instance.mpi]
 }
 
