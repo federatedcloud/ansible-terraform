@@ -20,7 +20,7 @@ resource "google_compute_subnetwork" "openmpi_cluster" {
 }
 resource "google_compute_instance" "openmpi_base_vm" {
   name         = "openmpi-base-vm-${random_id.instance_id.hex}"
-  machine_type = "n1-standard-2"
+  machine_type = var.machine_type
   zone         = var.zone
 
   labels = {
@@ -203,7 +203,7 @@ resource "local_file" "ssh_config" {
 ###################################################################
 # Ansible Script for adding host files 
 ###################################################################
-resource "null_resource" "default" {
+resource "null_resource" "connect_all_nodes" {
   triggers = {
     "after" = local_file.ssh_config.id
   }
@@ -211,8 +211,19 @@ resource "null_resource" "default" {
     host = element(google_compute_instance.mpi.*.network_interface.0.access_config.0.nat_ip, 0)
   }
   provisioner "local-exec" {
-    command = "sleep 20; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' ../ansible/DockerMPI.yaml && scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null centos@${google_compute_instance.mpi.0.network_interface.0.access_config[0].nat_ip}:~/out.txt ~/${var.RUNNAME}.txt"
+    command = "sleep 20; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' ../ansible/DockerMPI.yaml"
   }
   depends_on = [local_file.inventory, local_file.mpi_hostfile, local_file.internal_ips, local_file.ssh_config, google_compute_instance.mpi]
 }
 
+resource "null_resource" "benchmarks" {
+  triggers = {
+    "after" = null_resource.connect_all_nodes.id
+  }
+  connection {
+    host = google_compute_instance.mpi.0.network_interface.0.access_config.0.nat_ip
+  }
+  provisioner "local-exec" {
+    command = "sleep 5; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' --extra-vars 'host='${google_compute_instance.mpi.0.network_interface.0.access_config.0.nat_ip}'' ../ansible/HPL.yaml; scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null centos@${google_compute_instance.mpi.0.network_interface.0.access_config[0].nat_ip}:~/out.txt ~/${var.RUNNAME}.txt"
+  }
+}

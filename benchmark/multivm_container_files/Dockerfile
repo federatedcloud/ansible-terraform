@@ -1,5 +1,5 @@
 #FROM nix_alpine_openmpi:923dc259b1ef2247de2e3bef6b897fcd789391c6 
-FROM cornellcac/nix-mpi-benchmarks:56c9535e32224700fb513e1978af8980b2c239f1
+FROM cornellcac/nix-mpi-benchmarks:1baf38aec3807845d57aee31704f4672d3b06703
 USER root
 
 RUN passwd -d nixuser
@@ -9,6 +9,7 @@ ADD ssh_configfile /home/nixuser/.ssh/config
 RUN chown nixuser:nixuser /home/nixuser/.ssh/config
 RUN chmod 600 /home/nixuser/.ssh/config
 ADD mpi_hostfile /home/nixuser/mpi_hostfile
+ADD HPL.dat /home/nixuser/HPL.dat
 
 # make mpi and orted executable symlinks on path
 RUN for i in $(ls /nixenv/nixuser/.nix-profile/bin) ; do ln -s /nixenv/nixuser/.nix-profile/bin/"$i" /usr/bin ; done

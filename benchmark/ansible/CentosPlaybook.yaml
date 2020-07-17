@@ -15,6 +15,7 @@
         - git
         - device-mapper-persistent-data
         - lvm2
+        - htop
     - name: Add Docker repo
       get_url:
         url: https://download.docker.com/linux/centos/docker-ce.repo
@@ -45,10 +46,6 @@
       yum:
         name: docker-compose
         state: latest
-    - name: Install htop
-      yum:
-        name: htop
-        state: latest
 - name: install download and install benchmarks repo
   hosts: all
   tasks:
@@ -67,7 +64,6 @@
     # need to reset connection for docker commands
       meta: reset_connection
     - name: create image
-    # async is not needed (causes it to terminate early and register if we want to refer to it later) 
       shell: "source build-openmpi.sh"
       args:
         chdir: ${HOME}/docker-nix-mpi-benchmarks
