@@ -76,7 +76,7 @@ resource "google_compute_firewall" "allow_ssh" {
     ports = ["22"]
   }
 #open range for gce ssh
-  source_ranges = ["0.0.0.0/0", "24.59.0.0/16", "10.41.0.0/16", "128.84.0.0/16"]
+  source_ranges = ["24.59.0.0/16", "10.41.0.0/16", "128.84.0.0/16"]
   priority = "1000"
   depends_on = [google_compute_network.openmpi_cluster,google_compute_subnetwork.openmpi_cluster]
 }
