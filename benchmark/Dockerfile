@@ -25,4 +25,4 @@ RUN chown -R $nixuser:$nixuser $HOME/terraform-multivm \
 #RUN ls -al $HOME/multivm_container_files
 #RUN ls -al $HOME/nix_gcp
 USER $nixuser
-RUN nix-shell /home/nixuser/nix_gcp/default.nix --show-trace --run $HOME/nix_gcp/terraform.sh
+RUN nix-shell /home/nixuser/nix_gcp/default.nix --show-trace
