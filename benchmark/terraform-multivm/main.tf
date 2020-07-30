@@ -11,12 +11,12 @@ resource "random_id" "instance_id" {
 resource "google_compute_network" "openmpi_cluster" {
   name = "openmpi-cluster"
   project = var.project_id
-  auto_create_subnetworks = "false"
+  auto_create_subnetworks = "true"
 }
 
 resource "google_compute_subnetwork" "openmpi_cluster" {
   name = "openmpi-default-subnetwork"
-  ip_cidr_range = "10.0.0.0/24"
+  ip_cidr_range = "10.0.0.0/16"
   project = var.project_id
   region = var.region
   network = google_compute_network.openmpi_cluster.name
@@ -43,7 +43,7 @@ resource "google_compute_instance" "openmpi_base_vm" {
   metadata_startup_script = "echo"
   network_interface {
     network = google_compute_network.openmpi_cluster.name
-    subnetwork = google_compute_subnetwork.openmpi_cluster.name
+    #subnetwork = google_compute_subnetwork.openmpi_cluster.name
     access_config {
       // Include this section to give the VM a custom external ip address
     }
@@ -166,7 +166,7 @@ resource "google_compute_instance" "mpi" {
   }
   network_interface {
     network = google_compute_network.openmpi_cluster.name
-    subnetwork = google_compute_subnetwork.openmpi_cluster.name
+    #subnetwork = google_compute_subnetwork.openmpi_cluster.name
 
     access_config {
      // Include this section to give the VM a custom external ip address
