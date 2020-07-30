@@ -11,7 +11,9 @@ All the parameters for setting up the instances are provided in the variables.tf
    - `./destroy.sh <container-name>` will remove the gcp resources created in your last run. If the run failed at some point, it will still remove most gcp resources, but you may need to employ other methods such as the Cloud Console to deal with the rest.
  - Before each run, ensure that the number of instances and machine type in [terraform.tfvars](./terraform.tfvars) match the mpi runscript in [HPL.yaml](../ansible/HPL.yaml) and the [HPL.dat](../multivm-container-files/HPL.dat) file used.
 ## Creation and provisioning of instances
-The following steps detail how the instances are created and configured. These steps are applied automatically when calling the terraform scripts and do not need to be repeated. 
+The following steps detail how the instances are created and configured. These steps are applied automatically when calling the terraform scripts and do not need to be repeated. This picture gives a high level view of the process.
+![Terraform-Ansible](../Terraform-Ansible-Setup.png)
+
 1. Terraform will first set up a GCP network and subnetwork with a internal ip address range of 10.0.0.0/16. This is a blank network with default firewall rules of allowing all egress and preventing all ingress. A new centos7 will be set up on this network.
 2. Ansible installs the following packages in the centos7 instance (shell equivalent).
   ```bash
