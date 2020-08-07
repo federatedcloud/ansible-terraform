@@ -15,7 +15,7 @@ resource "google_compute_network" "openmpi_cluster" {
 
 resource "google_compute_subnetwork" "openmpi_cluster" {
   name = "openmpi-default-subnetwork"
-  ip_cidr_range = "10.0.0.0/24"
+  ip_cidr_range = "10.0.0.0/16"
   project = var.project_id
   region = var.region
   network = google_compute_network.openmpi_cluster.name
