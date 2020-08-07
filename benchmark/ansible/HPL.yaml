@@ -5,4 +5,4 @@
     - name: wait 600 seconds for target connection to be reachable
       wait_for_connection:
     - name: run benchmarks
-      shell: "docker exec -u nixuser nix_alpine_container nix-shell dev.nix --run 'cd ~; mpirun -np 12 --hostfile mpi_hostfile --bind-to core --map-by ppr:2:node xhpl' > out.txt"
+      shell: "docker exec -u nixuser nix_alpine_container nix-shell dev.nix --run 'cd ~; mpirun -np 6 --hostfile mpi_hostfile --bind-to core --map-by ppr:2:node xhpl' > out.txt"

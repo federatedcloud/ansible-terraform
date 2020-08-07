@@ -28,6 +28,6 @@
       shell: "docker exec -u nixuser nix_alpine_container bash -c 'ssh -o ConnectTimeout=10 -i ${HOME}/.ssh/id_rsa {{ item }} echo && hostname && echo || echo || echo'"
       loop: "{{ groups['hosts'] }}"
     - name: mpirun hostname 
-      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname'"
+      shell: "docker exec -u nixuser nix_alpine_container bash -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 hostname'"
     - name: mpirun ring
-      shell: "docker exec -u nixuser nix_alpine_container /bin/sh -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring'"
+      shell: "docker exec -u nixuser nix_alpine_container bash -c 'mpirun -d --hostfile /home/nixuser/mpi_hostfile --mca btl self,tcp --mca btl_tcp_if_include eth0 /home/nixuser/mpi_ring'"

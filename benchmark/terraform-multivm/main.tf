@@ -11,7 +11,6 @@ resource "random_id" "instance_id" {
 resource "google_compute_network" "openmpi_cluster" {
   name = "openmpi-cluster"
   project = var.project_id
-  auto_create_subnetworks = "false"
 }
 
 resource "google_compute_subnetwork" "openmpi_cluster" {
@@ -43,7 +42,6 @@ resource "google_compute_instance" "openmpi_base_vm" {
   metadata_startup_script = "echo"
   network_interface {
     network = google_compute_network.openmpi_cluster.name
-    subnetwork = google_compute_subnetwork.openmpi_cluster.name
     access_config {
       // Include this section to give the VM a custom external ip address
     }
@@ -166,7 +164,6 @@ resource "google_compute_instance" "mpi" {
   }
   network_interface {
     network = google_compute_network.openmpi_cluster.name
-    subnetwork = google_compute_subnetwork.openmpi_cluster.name
 
     access_config {
      // Include this section to give the VM a custom external ip address
@@ -230,6 +227,6 @@ resource "null_resource" "benchmarks" {
     host = google_compute_instance.mpi.0.network_interface.0.access_config.0.nat_ip
   }
   provisioner "local-exec" {
-    command = "sleep 5; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' --extra-vars 'host='${google_compute_instance.mpi.0.network_interface.0.access_config.0.nat_ip}'' ../ansible/HPL.yaml; scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null centos@${google_compute_instance.mpi.0.network_interface.0.access_config[0].nat_ip}:~/out.txt ~/${var.RUNNAME}.txt"
+    command = "sleep 5; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${path.module}/../ansible/inventory' -i '${path.module}/../ansible/internal_ips' -u '${var.USER}' --private-key '${var.PRIVATE_KEY}' --extra-vars 'user='${var.USER}'' --extra-vars 'host='${google_compute_instance.mpi.0.network_interface.0.access_config.0.nat_ip}'' ../ansible/HPL.yaml; scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null centos@${google_compute_instance.mpi.0.network_interface.0.access_config[0].nat_ip}:/home/centos/out.txt ~/${var.RUNNAME}.txt"
   }
 }

@@ -7,7 +7,7 @@ docker build -t nix_build_gcp_image \
   .
 docker stop terraform_ansible_container
 docker rm -f terraform_ansible_container
-docker run --name terraform_ansible_container nix_build_gcp_image sleep 1000 &
+docker run --name terraform_ansible_container nix_build_gcp_image sleep 10000 &
 sleep 10
 docker exec -t terraform_ansible_container nix-shell /home/nixuser/nix_gcp --run "source /home/nixuser/nix_gcp/terraform.sh"
 docker cp terraform_ansible_container:/home/nixuser/$RUNNAME.txt hpl-results
